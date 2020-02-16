@@ -217,6 +217,7 @@ public class SubscriptionFragment extends BaseStateFragment<List<SubscriptionEnt
     //////////////////////////////////////////////////////////////////////////*/
 
     private BroadcastReceiver subscriptionBroadcastReceiver;
+    private BroadcastReceiver importBroadcastReceiver;
 
     private void setupBroadcastReceiver() {
         if (activity == null) return;
@@ -232,10 +233,36 @@ public class SubscriptionFragment extends BaseStateFragment<List<SubscriptionEnt
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (importExportOptions != null) importExportOptions.collapse();
+
+                if (intent.getAction() == null) return;
+                switch (intent.getAction()) {
+                    case SubscriptionsExportService.EXPORT_COMPLETE_ACTION:
+                        Toast.makeText(activity, R.string.export_complete_toast, Toast.LENGTH_SHORT).show();
+                        break;
+                    case SubscriptionsImportService.IMPORT_COMPLETE_ACTION:
+                        Toast.makeText(activity, R.string.import_complete_toast, Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
         };
 
         LocalBroadcastManager.getInstance(activity).registerReceiver(subscriptionBroadcastReceiver, filters);
+
+        if (importBroadcastReceiver != null) {
+            LocalBroadcastManager.getInstance(activity).unregisterReceiver(importBroadcastReceiver);
+        }
+
+        final IntentFilter import_ongoing = new IntentFilter(
+                SubscriptionsImportService.IMPORT_ONGOING_ACTION
+        );
+        importBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Toast.makeText(activity, R.string.import_ongoing, Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        LocalBroadcastManager.getInstance(activity).registerReceiver(importBroadcastReceiver, import_ongoing);
     }
 
     private View addItemView(final String title, @DrawableRes final int icon, ViewGroup container) {
@@ -309,6 +336,7 @@ public class SubscriptionFragment extends BaseStateFragment<List<SubscriptionEnt
                 if (!exportFile.getParentFile().canWrite() || !exportFile.getParentFile().canRead()) {
                     Toast.makeText(activity, R.string.invalid_directory, Toast.LENGTH_SHORT).show();
                 } else {
+                    Toast.makeText(activity, R.string.export_ongoing, Toast.LENGTH_SHORT).show();
                     activity.startService(new Intent(activity, SubscriptionsExportService.class)
                             .putExtra(SubscriptionsExportService.KEY_FILE_PATH, exportFile.getAbsolutePath()));
                 }

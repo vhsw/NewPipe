@@ -94,7 +94,6 @@ public class SubscriptionsExportService extends BaseImportExportService {
     }
 
     private void startExport() {
-        showToast(R.string.export_ongoing);
 
         subscriptionService.subscriptionTable()
                 .getAll()
@@ -134,7 +133,6 @@ public class SubscriptionsExportService extends BaseImportExportService {
             @Override
             public void onComplete() {
                 LocalBroadcastManager.getInstance(SubscriptionsExportService.this).sendBroadcast(new Intent(EXPORT_COMPLETE_ACTION));
-                showToast(R.string.export_complete_toast);
                 stopService();
             }
         };

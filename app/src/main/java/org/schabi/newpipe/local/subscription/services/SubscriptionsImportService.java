@@ -54,7 +54,7 @@ import io.reactivex.schedulers.Schedulers;
 
 import static org.schabi.newpipe.MainActivity.DEBUG;
 
-public class SubscriptionsImportService extends BaseImportExportService {
+public class    SubscriptionsImportService extends BaseImportExportService {
     public static final int CHANNEL_URL_MODE = 0;
     public static final int INPUT_STREAM_MODE = 1;
     public static final int PREVIOUS_EXPORT_MODE = 2;
@@ -65,6 +65,7 @@ public class SubscriptionsImportService extends BaseImportExportService {
      * A {@link LocalBroadcastManager local broadcast} will be made with this action when the import is successfully completed.
      */
     public static final String IMPORT_COMPLETE_ACTION = "org.schabi.newpipe.local.subscription.services.SubscriptionsImportService.IMPORT_COMPLETE";
+    public static final String IMPORT_ONGOING_ACTION = "org.schabi.newpipe.local.subscription.services.SubscriptionsImportService.IMPORT_ONGOING";
 
     private Subscription subscription;
     private int currentMode;
@@ -104,6 +105,7 @@ public class SubscriptionsImportService extends BaseImportExportService {
             stopAndReportError(new IllegalStateException(errorDescription), "Importing subscriptions");
             return START_NOT_STICKY;
         }
+        LocalBroadcastManager.getInstance(SubscriptionsImportService.this).sendBroadcast(new Intent(IMPORT_ONGOING_ACTION));
 
         startImport();
         return START_NOT_STICKY;
@@ -141,7 +143,6 @@ public class SubscriptionsImportService extends BaseImportExportService {
     public static final int BUFFER_COUNT_BEFORE_INSERT = 50;
 
     private void startImport() {
-        showToast(R.string.import_ongoing);
 
         Flowable<List<SubscriptionItem>> flowable = null;
         switch (currentMode) {
@@ -210,7 +211,6 @@ public class SubscriptionsImportService extends BaseImportExportService {
             @Override
             public void onComplete() {
                 LocalBroadcastManager.getInstance(SubscriptionsImportService.this).sendBroadcast(new Intent(IMPORT_COMPLETE_ACTION));
-                showToast(R.string.import_complete_toast);
                 stopService();
             }
         };
